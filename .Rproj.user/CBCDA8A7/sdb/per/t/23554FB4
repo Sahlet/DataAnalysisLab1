@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "library(shiny)\n#shinyUI(\n  \n  fluidPage(\n    titlePanel(\"Random processes Lab1\"),\n    \n    sidebarLayout(\n      sidebarPanel(\n        fileInput('file1', 'Choose CSV File',\n                  accept=c('text/csv', \n                           'text/comma-separated-values,text/plain', \n                           '.csv')),\n#        tags$hr(),\n        checkboxInput('header', 'Header', FALSE),\n        radioButtons('sep', 'Separator',\n                     c(Space = '',\n                       Comma=',',\n                       Semicolon=';',\n                       Tab='\\t'),\n                     '')\n      ),\n      mainPanel(\n        plotOutput('correlation_field'),\n        tableOutput('contents')\n      )\n    )\n      \n  )\n  \n#)\n",
+    "created" : 1480414198131.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3550072197",
+    "id" : "23554FB4",
+    "lastKnownWriteTime" : 1480414225,
+    "last_content_update" : 1480414225112,
+    "path" : "D:/Книги/Прога/7 семестр/Випадкові процеси/lab1/Rlab1/ui.R",
+    "project_path" : "ui.R",
+    "properties" : {
+        "docOutlineSize" : "127.97442101506121",
+        "docOutlineVisible" : "0",
+        "source_window_id" : ""
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
