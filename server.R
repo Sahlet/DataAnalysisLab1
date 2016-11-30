@@ -17,10 +17,7 @@ shinyServer(function(input, output) {
         colnames(result) <- c('x', 'y');
       }
     }
-  });
-  
-  output$contents <- renderTable({
-    return(get_my_table());
+    return(result);
   });
    
   output$correlation_field <- renderPlot({
@@ -30,8 +27,6 @@ shinyServer(function(input, output) {
     }
     return(NULL);
   })
-  
-  #clear_temp_data(output);
   
   return(NULL);
 })

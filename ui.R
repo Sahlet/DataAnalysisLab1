@@ -12,16 +12,11 @@ library(shiny)
                            '.csv')),
 #        tags$hr(),
         checkboxInput('header', 'Header', FALSE),
-        radioButtons('sep', 'Separator',
-                     c(Space = '',
-                       Comma=',',
-                       Semicolon=';',
-                       Tab='\t'),
-                     '')
+        radioButtons('sep', 'Separator', c( Space = '', Comma=',', Semicolon=';' ), '')
+
       ),
       mainPanel(
-        plotOutput('correlation_field'),
-        tableOutput('contents')
+        plotOutput('correlation_field')
       )
     )
       
