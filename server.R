@@ -28,5 +28,8 @@ shinyServer(function(input, output) {
     return(NULL);
   })
   
+  #t.test with 1 and 2 samples
+  #https://www.youtube.com/watch?v=FMBXWwWY0Qk
+  
   return(NULL);
 })

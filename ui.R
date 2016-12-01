@@ -12,8 +12,12 @@ library(shiny)
                            '.csv')),
 #        tags$hr(),
         checkboxInput('header', 'Header', FALSE),
-        radioButtons('sep', 'Separator', c( Space = '', Comma=',', Semicolon=';' ), '')
-
+        radioButtons('sep', 'Separator', c( Space = '', Comma=',', Semicolon=';' ), ''),
+        br(),
+        br(),
+        sliderInput("alpha", "significance level (alpha):", 
+            min = 0.001, max = 0.999, value = 0.05, step= 0.001)
+        
       ),
       mainPanel(
         plotOutput('correlation_field')
