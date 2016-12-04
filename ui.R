@@ -15,12 +15,29 @@ library(shiny)
         radioButtons('sep', 'Separator', c( Space = '', Comma=',', Semicolon=';' ), ''),
         br(),
         br(),
-        sliderInput("alpha", "significance level (alpha):", 
-            min = 0.001, max = 0.999, value = 0.05, step= 0.001)
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        sliderInput("confidence_level", "confidence level:", 
+            min = 0.0001, max = 0.9999, value = 0.95, step= 0.0001)
         
       ),
       mainPanel(
-        plotOutput('correlation_field')
+        h3("Correlation field"),
+        plotOutput('correlation_field'),
+        br(),
+        h3("Primary statistical analysis"),
+        verbatimTextOutput("primary_statistical_analysis"),
+        br(),
+        h3("Correlation"),
+        verbatimTextOutput("correlation")
       )
     )
       
