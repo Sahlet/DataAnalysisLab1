@@ -36,8 +36,14 @@ library(shiny)
         h3("Primary statistical analysis"),
         verbatimTextOutput("primary_statistical_analysis"),
         br(),
-        h3("Correlation"),
-        verbatimTextOutput("correlation")
+        h3("Pearson correlation test"),
+        verbatimTextOutput("Pearson_correlation_test"),
+        br(),
+        h3("Spearman correlation test"),
+        verbatimTextOutput("Spearman_correlation_test"),
+        br(),
+        h3("Kendall correlation test"),
+        verbatimTextOutput("Kendall_correlation_test")
       )
     )
       

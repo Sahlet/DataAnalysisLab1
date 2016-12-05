@@ -88,11 +88,11 @@ shinyServer(function(input, output) {
   })
   
   #* 2.1.	знаходження оцінки коефіцієнта кореляції, перевірку його значущості та призначення довірчого інтервалу (у випадку значущості);
-  output$correlation <- renderPrint({
+  output$Pearson_correlation_test <- renderPrint({
     my_table <- get_my_table();
     if (is.null(my_table)) return(NULL);
     
-    cor_test <- cor.test(my_table[[1]], my_table[[2]], conf.level = input$confidence_level);
+    cor_test <- cor.test(my_table[[1]], my_table[[2]], conf.level = input$confidence_level, method = "pearson");
     cor_test$data.name <- paste(colnames(my_table)[1], "and", colnames(my_table)[2]);
     return(cor_test);
   })
@@ -100,7 +100,23 @@ shinyServer(function(input, output) {
   #* 2.2.	обчислення коефіцієнта кореляційного відношення та перевірку його значущості;
   
   #* 2.3.	підрахунок рангових коефіцієнтів кореляції Спірмена та Кендалла та перевірку їх значущості.
-  #cor(my_table, method="spearman")
+  output$Spearman_correlation_test <- renderPrint({
+    my_table <- get_my_table();
+    if (is.null(my_table)) return(NULL);
+    
+    cor_test <- cor.test(my_table[[1]], my_table[[2]], conf.level = input$confidence_level, method = "spearman");
+    cor_test$data.name <- paste(colnames(my_table)[1], "and", colnames(my_table)[2]);
+    return(cor_test);
+  })
+  
+  output$Kendall_correlation_test <- renderPrint({
+    my_table <- get_my_table();
+    if (is.null(my_table)) return(NULL);
+    
+    cor_test <- cor.test(my_table[[1]], my_table[[2]], conf.level = input$confidence_level, method = "kendall");
+    cor_test$data.name <- paste(colnames(my_table)[1], "and", colnames(my_table)[2]);
+    return(cor_test);
+  })
   
   return(NULL);
 })
