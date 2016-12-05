@@ -35,15 +35,41 @@ library(shiny)
         br(),
         h3("Primary statistical analysis"),
         verbatimTextOutput("primary_statistical_analysis"),
-        br(),
-        h3("Pearson correlation test"),
-        verbatimTextOutput("Pearson_correlation_test"),
-        br(),
-        h3("Spearman correlation test"),
-        verbatimTextOutput("Spearman_correlation_test"),
-        br(),
-        h3("Kendall correlation test"),
-        verbatimTextOutput("Kendall_correlation_test")
+        conditionalPanel(
+          condition = "output.primary_statistical_analysis != 'NULL'",
+          
+          br(),
+          h3("Pearson correlation test"),
+          verbatimTextOutput("Pearson_correlation_test"),
+          br(),
+          h3("Spearman correlation test"),
+          verbatimTextOutput("Spearman_correlation_test"),
+          br(),
+          h3("Kendall correlation test"),
+          verbatimTextOutput("Kendall_correlation_test"),
+          br(),
+          h3("Correlation index (correlation ratio) test"),
+          inputPanel(
+            verbatimTextOutput("min_max"),
+            br(),
+            checkboxInput('set_own_subranges', 'Own subranges', FALSE),
+            br(),
+            conditionalPanel(
+              condition = "input.set_own_subranges == false",
+              sliderInput("subrange_number", "subrange number", value = 5, min = 1, max = 200, step = 1)
+            ),
+            br(),
+            conditionalPanel(
+              condition = "input.set_own_subranges == true",
+              textOutput("select_file_text"),
+              fileInput('file2_ranges', '',
+                        accept=c('text/csv', 
+                                 'text/comma-separated-values,text/plain', 
+                                 '.csv')
+              )
+            )
+          )
+        )
       )
     )
       

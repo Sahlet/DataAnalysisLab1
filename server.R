@@ -118,5 +118,25 @@ shinyServer(function(input, output) {
     return(cor_test);
   })
   
+  output$min_max <- renderPrint({
+    my_table <- get_my_table();
+    if (is.null(my_table)) return(NULL);
+    
+    return(cat(
+      paste0("[min(", colnames(my_table)[1], "); max(", colnames(my_table)[1], ")]   =   [", min(my_table[[1]]), "; ", max(my_table[[1]]), "]")
+    ));
+  })
+  
+  output$select_file_text <- renderPrint({
+    my_table <- get_my_table();
+    if (is.null(my_table)) return(NULL);
+    
+    return(cat(
+      paste0("Select file with vector of numbers from range [", min(my_table[[1]]), "; ", max(my_table[[1]]), "]")
+    ));
+  })
+  
+  
+  
   return(NULL);
 })
