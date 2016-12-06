@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "library(shiny)\n#shinyUI(\n  \n  fluidPage(\n    titlePanel(\"Random processes Lab1\"),\n    \n    sidebarLayout(\n      sidebarPanel(\n        fileInput('file1', 'Choose CSV File',\n                  accept=c('text/csv', \n                           'text/comma-separated-values,text/plain', \n                           '.csv')),\n#        tags$hr(),\n        checkboxInput('header', 'Header', FALSE),\n        radioButtons('sep', 'Separator', c( Space = '', Comma=',', Semicolon=';' ), ''),\n        br(),\n        br(),\n        br(),\n        br(),\n        br(),\n        br(),\n        br(),\n        br(),\n        br(),\n        br(),\n        br(),\n        br(),\n        sliderInput(\"confidence_level\", \"confidence level:\", \n            min = 0.0001, max = 0.9999, value = 0.95, step= 0.0001)\n        \n      ),\n      mainPanel(\n        h3(\"Correlation field\"),\n        plotOutput('correlation_field'),\n        br(),\n        h3(\"Primary statistical analysis\"),\n        verbatimTextOutput(\"primary_statistical_analysis\"),\n        conditionalPanel(\n          condition = \"output.primary_statistical_analysis != 'NULL'\",\n          \n          br(),\n          h3(\"Pearson correlation test\"),\n          verbatimTextOutput(\"Pearson_correlation_test\"),\n          br(),\n          h3(\"Spearman correlation test\"),\n          verbatimTextOutput(\"Spearman_correlation_test\"),\n          br(),\n          h3(\"Kendall correlation test\"),\n          verbatimTextOutput(\"Kendall_correlation_test\"),\n          br(),\n          h3(\"Correlation index (correlation ratio) test\"),\n          inputPanel(\n            verbatimTextOutput(\"min_max\"),\n            br(),\n            checkboxInput('set_own_subranges', 'Own subranges', FALSE),\n            br(),\n            conditionalPanel(\n              condition = \"input.set_own_subranges == false\",\n              sliderInput(\"subrange_number\", \"subrange number\", value = 5, min = 1, max = 200, step = 1)\n            ),\n            br(),\n            conditionalPanel(\n              condition = \"input.set_own_subranges == true\",\n              textOutput(\"select_file_text\"),\n              fileInput('file2_ranges', '',\n                        accept=c('text/csv', \n                                 'text/comma-separated-values,text/plain', \n                                 '.csv')\n              )\n            )\n          ),\n          verbatimTextOutput(\"correlation_ratio_test\")\n        )\n      )\n    )\n      \n  )\n  \n#)\n",
+    "created" : 1480414198131.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "4276105554",
+    "id" : "23554FB4",
+    "lastKnownWriteTime" : 1481007912,
+    "last_content_update" : 1481007912497,
+    "path" : "D:/Книги/Прога/7 семестр/Випадкові процеси/DataAnalysisLab1/ui.R",
+    "project_path" : "ui.R",
+    "properties" : {
+        "docOutlineSize" : "127.97442101506121",
+        "docOutlineVisible" : "0",
+        "source_window_id" : ""
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

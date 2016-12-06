@@ -40,6 +40,61 @@ primary_statistical_analysis <- function(vec, confidence_level = 0.95, vec_name 
   )
 }
 
+correlation_ratio_test <- function(my_table, points_from_range_) {
+  my_table_x_range <- range(my_table[[1]]);
+  points_from_range <- sort(split(points_from_range_, sapply(points_from_range_, function(arg) {
+    if (arg >= my_table_x_range[1] && arg <= my_table_x_range[2]){
+      return (1);
+    }
+    return(0);
+  }))$'1');
+  
+  if (points_from_range[1] != my_table_x_range[1]) points_from_range <- c(my_table_x_range[1], points_from_range);
+  points_from_range_length <- length(points_from_range);
+  if (points_from_range[points_from_range_length] != my_table_x_range[2]) {
+    points_from_range <- c(points_from_range, my_table_x_range[2]);
+    points_from_range_length <- points_from_range_length + 1;
+  }
+  
+  ranges <- matrix(nrow = points_from_range_length - 1, ncol = 2);
+  
+  for(n in 1:(points_from_range_length - 1)) {
+    ranges[n,] <- c(points_from_range[n], points_from_range[n + 1]);
+  }
+  
+  my_table_length <- length(my_table);
+  ranges_length <- points_from_range_length - 1;
+  range_numbers <- array(dim = my_table_length);
+  
+  n <- 1;
+  while (n <= my_table_length) {
+    if (is.na(my_table[n, 1])){
+      range_numbers[n] <- NA;
+      n <- n + 1;
+      next;
+    }
+    range_number <- 1;
+    while(range_number <= (ranges_length - 1)){
+      if (
+          (ranges[range_number, 1] <= my_table[n, 1]) &&
+          (my_table[n, 1] < ranges[range_number, 2])
+        ){
+        break;
+      }
+      range_number <- range_number + 1;
+    }
+    range_numbers[n] <- range_number;
+    n <- n + 1;
+  }
+  
+  saply(split(my_table, range_numbers),function(my_table_part){
+    print(my_table_part[order(my_table_part[[1]]]),])
+  });
+  print("__________________");
+  print(range_numbers);
+  
+  return (NULL);
+};
 
 shinyServer(function(input, output) {
   
@@ -136,7 +191,29 @@ shinyServer(function(input, output) {
     ));
   })
   
-  
-  
-  return(NULL);
+  output$correlation_ratio_test <- renderText({
+    my_table <- get_my_table();
+    if (is.null(my_table) || is.null(input$set_own_subranges)) return(NULL);
+    
+    subranges <- c();
+    
+    if (!input$set_own_subranges) {
+      my_table_x_range <- range(my_table[[1]]);
+      if (input$subrange_number <= 1) {
+        subranges <- my_table_x_range;
+      } else {
+        range_length = (my_table_x_range[2] - my_table_x_range[1]) / input$subrange_number;
+        for (n in 0:(input$subrange_number - 1)){
+          subranges <- c(subranges, my_table_x_range[1] + n*range_length);
+        }
+        subranges <- c(subranges, my_table_x_range[2]);
+      }
+    } else {
+      if (!is.null(input$file2_ranges) && !is.null(input$file2_ranges$datapath)){
+        subranges <- read.table(input$file2_ranges$datapath, header=FALSE, sep='')[[1]];
+      } else return(NULL);
+    }
+    
+    return(correlation_ratio_test(my_table, subranges));
+  })
 })
