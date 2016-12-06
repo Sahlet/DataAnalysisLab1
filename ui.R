@@ -56,7 +56,7 @@ library(shiny)
             br(),
             conditionalPanel(
               condition = "input.set_own_subranges == false",
-              sliderInput("subrange_number", "subrange number", value = 5, min = 1, max = 200, step = 1)
+              sliderInput("subrange_number", "subrange number", value = 5, min = 2, max = 200, step = 1)
             ),
             br(),
             conditionalPanel(

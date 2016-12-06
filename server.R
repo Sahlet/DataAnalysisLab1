@@ -40,7 +40,7 @@ primary_statistical_analysis <- function(vec, confidence_level = 0.95, vec_name 
   )
 }
 
-correlation_ratio_test <- function(my_table, points_from_range_) {
+correlation_ratio_test <- function(my_table, points_from_range_, confidence_level = 0.95) {
   my_table_x_range <- range(my_table[[1]]);
   points_from_range <- sort(split(points_from_range_, sapply(points_from_range_, function(arg) {
     if (arg >= my_table_x_range[1] && arg <= my_table_x_range[2]){
@@ -62,7 +62,7 @@ correlation_ratio_test <- function(my_table, points_from_range_) {
     ranges[n,] <- c(points_from_range[n], points_from_range[n + 1]);
   }
   
-  my_table_length <- length(my_table);
+  my_table_length <- length(my_table[[1]]);
   ranges_length <- points_from_range_length - 1;
   range_numbers <- array(dim = my_table_length);
   
@@ -87,13 +87,47 @@ correlation_ratio_test <- function(my_table, points_from_range_) {
     n <- n + 1;
   }
   
-  saply(split(my_table, range_numbers),function(my_table_part){
-    print(my_table_part[order(my_table_part[[1]]]),])
+  averages <- tapply(1:my_table_length, range_numbers, function(my_table_part) {
+    mean(my_table[[2]][my_table_part]);
   });
-  print("__________________");
-  print(range_numbers);
   
-  return (NULL);
+  ratio <- (
+    sd(sapply(range_numbers, function(range_number){
+      averages[as.character(range_number)];
+    }))
+    /
+    sd(my_table[[2]])
+  )^2;
+  
+  result <- list();
+  
+  result$data.description <- cat(paste("data: ", colnames(my_table)[1], "and", colnames(my_table)[2]));
+  
+  result$test.f <- (ratio/(ranges_length - 1))/((1 - ratio)/(my_table_length - ranges_length));
+  result$test.df1 <- ranges_length - 1;
+  result$test.df2 <- my_table_length - ranges_length;
+  result$test.f_quantile <- qf(confidence_level, ranges_length - 1, my_table_length - ranges_length);
+  result$test.p_val <- NULL;
+  
+  if (result$test.f <= result$test.f_quantile) {#H0
+    result$hypothesis.main <- TRUE;
+    result$hypothesis.alternative <- FALSE;
+    result$hypothesis.description <- "main hypothesis: true ratio is equal to 0";
+  } else {#H1
+    result$hypothesis.main <- FALSE;
+    result$hypothesis.alternative <- TRUE;
+    result$hypothesis.description <- "alternative hypothesis: true ratio is not equal to 0";
+  }
+  
+  result$conf.level <- confidence_level;
+  result$conf.int <- c(qf((1 - confidence_level)/2), qf((1 + confidence_level)/2));
+  
+  result$conf.description <- cat(paste(result$conf.level, "percent confidence interval:", result$conf.int));
+  
+  result$ratio.estimate <- ratio;
+  result$ratio.description <- cat(paste("ratio estimate:", result$ratio.estimate));
+  
+  return (ratio);
 };
 
 shinyServer(function(input, output) {
@@ -214,6 +248,6 @@ shinyServer(function(input, output) {
       } else return(NULL);
     }
     
-    return(correlation_ratio_test(my_table, subranges));
+    return(correlation_ratio_test(my_table, subranges, input$confidence_level));
   })
 })
