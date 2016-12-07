@@ -103,11 +103,14 @@ correlation_ratio_test <- function(my_table, points_from_range_, confidence_leve
   
   result$data.description <- cat(paste("data: ", colnames(my_table)[1], "and", colnames(my_table)[2]));
   
-  result$test.f <- (ratio/(ranges_length - 1))/((1 - ratio)/(my_table_length - ranges_length));
-  result$test.df1 <- ranges_length - 1;
-  result$test.df2 <- my_table_length - ranges_length;
-  result$test.f_quantile <- qf(confidence_level, ranges_length - 1, my_table_length - ranges_length);
-  result$test.p_val <- NULL;
+  df1 <- ranges_length - 1;
+  df2 <- my_table_length - ranges_length;
+  
+  result$test.f <- (ratio/df1)/((1 - ratio)/df2);
+  result$test.df1 <- df1;
+  result$test.df2 <- df2;
+  result$test.f_quantile <- qf(confidence_level, df1, df2);
+  result$test.p_val <- 1 - pf(result$test.f, df1, df2);
   
   if (result$test.f <= result$test.f_quantile) {#H0
     result$hypothesis.main <- TRUE;
@@ -120,14 +123,15 @@ correlation_ratio_test <- function(my_table, points_from_range_, confidence_leve
   }
   
   result$conf.level <- confidence_level;
-  result$conf.int <- c(qf((1 - confidence_level)/2), qf((1 + confidence_level)/2));
+  #ratio = 1 - 1/(f*(df1 / df2) + 1)
+  result$conf.int <- 1 - 1/(c(qf((1 - confidence_level)/2, df1, df2), qf((1 + confidence_level)/2, df1, df2)) * (df1 / df2) + 1);
   
   result$conf.description <- cat(paste(result$conf.level, "percent confidence interval:", result$conf.int));
   
   result$ratio.estimate <- ratio;
   result$ratio.description <- cat(paste("ratio estimate:", result$ratio.estimate));
   
-  return (ratio);
+  return (result);
 };
 
 shinyServer(function(input, output) {
