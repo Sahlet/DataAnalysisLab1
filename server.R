@@ -7,9 +7,9 @@ primary_statistical_analysis <- function(vec, confidence_level = 0.95, vec_name 
   
   mean_vec <- mean(vec);
   sd_vec <- sd(vec);
-  #асимметрия
+  #asymmetry
   skewness_vec <- skewness(vec);
-  #эксцесс
+  #excess
   kurtosis_vec <- kurtosis(vec);
   
   mean_deviation <- t_quantile*sd_vec/sqrt(size_vec);
