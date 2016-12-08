@@ -32,23 +32,15 @@ library(shiny)
       mainPanel(
         h3("Correlation field"),
         plotOutput('correlation_field'),
-        br(),
-        h3("Primary statistical analysis"),
-        verbatimTextOutput("primary_statistical_analysis"),
+        verbatimTextOutput("sample_size"),
         conditionalPanel(
-          condition = "output.primary_statistical_analysis != 'NULL'",
+          condition = "output.sample_size != 'NULL'",
           
           br(),
-          h3("Pearson correlation test"),
-          verbatimTextOutput("Pearson_correlation_test"),
+          h3("Primary statistical analysis"),
+          tableOutput("primary_statistical_analysis"),
           br(),
-          h3("Spearman correlation test"),
-          verbatimTextOutput("Spearman_correlation_test"),
-          br(),
-          h3("Kendall correlation test"),
-          verbatimTextOutput("Kendall_correlation_test"),
-          br(),
-          h3("Correlation index (correlation ratio) test"),
+          h3("Correlation index (correlation ratio) test settings"),
           inputPanel(
             verbatimTextOutput("min_max"),
             br(),
@@ -69,7 +61,9 @@ library(shiny)
               )
             )
           ),
-          verbatimTextOutput("correlation_ratio_test")
+          br(),
+          h3("Correlation test"),
+          tableOutput("correlation_test")
         )
       )
     )

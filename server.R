@@ -1,7 +1,7 @@
 library(shiny)
 library(moments)
 
-primary_statistical_analysis <- function(vec, confidence_level = 0.95, vec_name = "vec") {
+primary_statistical_analysis <- function(vec, confidence_level = 0.95) {
   size_vec <- length(vec);
   t_quantile <- qt((1 + confidence_level) / 2, size_vec - 1);
   
@@ -22,22 +22,16 @@ primary_statistical_analysis <- function(vec, confidence_level = 0.95, vec_name 
       (((size_vec + 1)^2)*(size_vec + 3)*(size_vec + 5))
     );
   
-  cat(
-    vec_name,":\n",
-    "\tmean(", vec_name, ") = ", mean_vec,"\n",
-    "\tconfidence interval = (", mean_vec - mean_deviation, ", ", mean_vec + mean_deviation, ")\n",
-    "\n",
-    "\tstandard deviation(", vec_name, ") = ", sd_vec,"\n",
-    "\tconfidence interval = (", sd_vec - sd_deviation, ", ", sd_vec + sd_deviation, ")\n",
-    "\n",
-    "\tskewness(", vec_name, ") = ", skewness_vec,"\n",
-    "\tconfidence interval = (", skewness_vec - skewness_deviation, ", ", skewness_vec + skewness_deviation, ")\n",
-    "\n",
-    "\tkurtosis(", vec_name, ") = ", kurtosis_vec,"\n",
-    "\tconfidence interval = (", kurtosis_vec - kurtosis_deviation, ", ", kurtosis_vec + kurtosis_deviation, ")\n",
-    "\n",
-    sep = ""
-  )
+  return(c(
+    as.character(mean_vec),
+    paste0("(", mean_vec - mean_deviation, ", ", mean_vec + mean_deviation, ")"),
+    as.character(sd_vec),
+    paste0("(", sd_vec - sd_deviation, ", ", sd_vec + sd_deviation, ")", sep = ""),
+    as.character(skewness_vec),
+    paste0("(", skewness_vec - skewness_deviation, ", ", skewness_vec + skewness_deviation, ")", sep = ""),
+    as.character(kurtosis_vec),
+    paste0("(", kurtosis_vec - kurtosis_deviation, ", ", kurtosis_vec + kurtosis_deviation, ")", sep = "")
+  ));
 }
 
 correlation_ratio_test <- function(my_table, points_from_range_, confidence_level = 0.95) {
@@ -101,7 +95,7 @@ correlation_ratio_test <- function(my_table, points_from_range_, confidence_leve
   
   result <- list();
   
-  result$data.description <- cat(paste("data: ", colnames(my_table)[1], "and", colnames(my_table)[2]));
+  result$data.description <- paste("data: ", colnames(my_table)[1], "and", colnames(my_table)[2]);
   
   df1 <- ranges_length - 1;
   df2 <- my_table_length - ranges_length;
@@ -122,14 +116,10 @@ correlation_ratio_test <- function(my_table, points_from_range_, confidence_leve
     result$hypothesis.description <- "alternative hypothesis: true ratio is not equal to 0";
   }
   
-  result$conf.level <- confidence_level;
-  #ratio = 1 - 1/(f*(df1 / df2) + 1)
-  result$conf.int <- 1 - 1/(c(qf((1 - confidence_level)/2, df1, df2), qf((1 + confidence_level)/2, df1, df2)) * (df1 / df2) + 1);
-  
-  result$conf.description <- cat(paste(result$conf.level, "percent confidence interval:", result$conf.int));
+  result$conf.description <- paste(result$conf.level, "percent confidence interval:", result$conf.int);
   
   result$ratio.estimate <- ratio;
-  result$ratio.description <- cat(paste("ratio estimate:", result$ratio.estimate));
+  result$ratio.description <- paste("ratio estimate:", result$ratio.estimate);
   
   return (result);
 };
@@ -167,50 +157,152 @@ shinyServer(function(input, output) {
     return(NULL);
   })
   
+  output$sample_size <- renderPrint({
+    my_table <- get_my_table();
+    if (!is.null(my_table)){
+      return(cat(paste("sample size is", length(my_table[[1]]))));
+    }
+    return(NULL);
+  })
+  
   #і проведення первинного статистичного аналізу окремих ознак об’єкта (точкове та інтервальне оцінювання середнього, середньоквадратичного, коефіцієнтів асиметрії та ексцесу).
-  output$primary_statistical_analysis <- renderPrint({
+  output$primary_statistical_analysis <- renderTable({
     my_table <- get_my_table();
     if (is.null(my_table)) return(NULL);
-    cat(
-      cat("sample size is", length(my_table[[1]]), "\n\n"),
-      primary_statistical_analysis(my_table[[1]], input$confidence_level, colnames(my_table)[1]),
-      cat("\n"),
-      primary_statistical_analysis(my_table[[2]], input$confidence_level, colnames(my_table)[2]),
-      sep = ""
+    row_names <- c(
+      "mean",
+      "mean conf.int",
+      "sd (standard deviation)",
+      "sd conf.int",
+      "asymmetry",
+      "asymmetry conf.int",
+      "excess",
+      "excess conf.int"
     );
+    
+    #cat("sample size is", length(my_table[[1]]), "\n\n");
+    
+    result <- data.frame(
+      row_names,
+      primary_statistical_analysis(my_table[[1]], input$confidence_level),
+      primary_statistical_analysis(my_table[[2]], input$confidence_level)
+    );
+    colnames(result) <- c("", colnames(my_table));
+    return (result);
   })
   
   #* 2.1.	знаходження оцінки коефіцієнта кореляції, перевірку його значущості та призначення довірчого інтервалу (у випадку значущості);
-  output$Pearson_correlation_test <- renderPrint({
+  #* 2.3.	підрахунок рангових коефіцієнтів кореляції Спірмена та Кендалла та перевірку їх значущості.
+  output$correlation_test <- renderTable({
+    #Pearson_correlation_test
     my_table <- get_my_table();
     if (is.null(my_table)) return(NULL);
-    
+    #Pearson correlation test
     cor_test <- cor.test(my_table[[1]], my_table[[2]], conf.level = input$confidence_level, method = "pearson");
-    cor_test$data.name <- paste(colnames(my_table)[1], "and", colnames(my_table)[2]);
-    return(cor_test);
-  })
+    #cor_test$data.name <- paste(colnames(my_table)[1], "and", colnames(my_table)[2]);
+    ratio_test <- NULL;
+    
+    if (!is.null(my_table) && !is.null(input$set_own_subranges)) {
+    
+      subranges <- c();
+      
+      call_correlation_ratio_test <- TRUE;
+       
+      if (!input$set_own_subranges) {
+        my_table_x_range <- range(my_table[[1]]);
+        if (input$subrange_number <= 1) {
+          subranges <- my_table_x_range;
+        } else {
+          range_length = (my_table_x_range[2] - my_table_x_range[1]) / input$subrange_number;
+          for (n in 0:(input$subrange_number - 1)){
+            subranges <- c(subranges, my_table_x_range[1] + n*range_length);
+          }
+          subranges <- c(subranges, my_table_x_range[2]);
+        }
+      } else {
+        if (!is.null(input$file2_ranges) && !is.null(input$file2_ranges$datapath)){
+          subranges <- read.table(input$file2_ranges$datapath, header=FALSE, sep='')[[1]];
+        } else {
+          call_correlation_ratio_test <- FALSE;
+        }
+      }
+      
+      if (call_correlation_ratio_test)
+        ratio_test <- correlation_ratio_test(my_table, subranges, input$confidence_level);
+    }
+    
+    #Spearman correlation test
+    Sp_cor_test <- cor.test(my_table[[1]], my_table[[2]], conf.level = input$confidence_level, method = "spearman");
+    
+    #Kendall correlation test
+    Kend_cor_test <- cor.test(my_table[[1]], my_table[[2]], conf.level = input$confidence_level, method = "kendall");
+    
+    null_rm <- function(val){
+      if (is.null(val)) return("-");
+      return(val);
+    }
+    
+    row_names <- c(
+      "Pearson's",
+      "corr ratio",
+      "Spearman's",
+      "Kendall's"
+    );
+    
+    estimate <- c(
+      cor_test$estimate,
+      null_rm(ratio_test$ratio.estimate),
+      Sp_cor_test$estimate,
+      Kend_cor_test$estimate
+    );
+    
+    statistic <- c(
+      cor_test$statistic,
+      null_rm(ratio_test$test.f),
+      Sp_cor_test$statistic,
+      Kend_cor_test$statistic
+    );
+    
+    quantile <- c(
+      qt((1 + input$confidence_level)/2, length(my_table[[1]]) - 2),
+      null_rm(ratio_test$test.f_quantile),
+      qt((1 + input$confidence_level)/2, length(my_table[[1]]) - 2),
+      qnorm((1 + input$confidence_level)/2)
+    );
+    
+    H0_estimate_equal_to_0 <- abs(statistic) <= quantile;
+    
+    p_level <- c(
+      cor_test$p.value,
+      null_rm(ratio_test$test.p_val),
+      Sp_cor_test$p.value,
+      Kend_cor_test$p.value
+    );
+    conf_int <- c(
+      paste0("(", cor_test$conf.int[1], "; ", cor_test$conf.int[2], ")"),
+      "-",
+      "-",
+      "-"
+    );
+    
+    result <- data.frame(
+      row_names,
+      estimate,
+      statistic,
+      quantile,
+      H0_estimate_equal_to_0,
+      p_level,
+      conf_int
+    );
+    
+    colnames(result)[1] <- "";
+    colnames(result)[5] <- "H0: estimate is 0";
+    
+    return (result);
+    
+  });
   
   #* 2.2.	обчислення коефіцієнта кореляційного відношення та перевірку його значущості;
-  
-  #* 2.3.	підрахунок рангових коефіцієнтів кореляції Спірмена та Кендалла та перевірку їх значущості.
-  output$Spearman_correlation_test <- renderPrint({
-    my_table <- get_my_table();
-    if (is.null(my_table)) return(NULL);
-    
-    cor_test <- cor.test(my_table[[1]], my_table[[2]], conf.level = input$confidence_level, method = "spearman");
-    cor_test$data.name <- paste(colnames(my_table)[1], "and", colnames(my_table)[2]);
-    return(cor_test);
-  })
-  
-  output$Kendall_correlation_test <- renderPrint({
-    my_table <- get_my_table();
-    if (is.null(my_table)) return(NULL);
-    
-    cor_test <- cor.test(my_table[[1]], my_table[[2]], conf.level = input$confidence_level, method = "kendall");
-    cor_test$data.name <- paste(colnames(my_table)[1], "and", colnames(my_table)[2]);
-    return(cor_test);
-  })
-  
   output$min_max <- renderPrint({
     my_table <- get_my_table();
     if (is.null(my_table)) return(NULL);
@@ -227,31 +319,5 @@ shinyServer(function(input, output) {
     return(cat(
       paste0("Select file with vector of numbers from range [", min(my_table[[1]]), "; ", max(my_table[[1]]), "]")
     ));
-  })
-  
-  output$correlation_ratio_test <- renderText({
-    my_table <- get_my_table();
-    if (is.null(my_table) || is.null(input$set_own_subranges)) return(NULL);
-    
-    subranges <- c();
-    
-    if (!input$set_own_subranges) {
-      my_table_x_range <- range(my_table[[1]]);
-      if (input$subrange_number <= 1) {
-        subranges <- my_table_x_range;
-      } else {
-        range_length = (my_table_x_range[2] - my_table_x_range[1]) / input$subrange_number;
-        for (n in 0:(input$subrange_number - 1)){
-          subranges <- c(subranges, my_table_x_range[1] + n*range_length);
-        }
-        subranges <- c(subranges, my_table_x_range[2]);
-      }
-    } else {
-      if (!is.null(input$file2_ranges) && !is.null(input$file2_ranges$datapath)){
-        subranges <- read.table(input$file2_ranges$datapath, header=FALSE, sep='')[[1]];
-      } else return(NULL);
-    }
-    
-    return(correlation_ratio_test(my_table, subranges, input$confidence_level));
   })
 })
